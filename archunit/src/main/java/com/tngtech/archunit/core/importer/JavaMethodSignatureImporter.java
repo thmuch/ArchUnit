@@ -16,7 +16,7 @@
 package com.tngtech.archunit.core.importer;
 
 import com.tngtech.archunit.base.Optional;
-import com.tngtech.archunit.core.domain.JavaField;
+import com.tngtech.archunit.core.domain.JavaCodeUnit;
 import com.tngtech.archunit.core.importer.DomainBuilders.JavaTypeCreationProcess;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
@@ -25,35 +25,35 @@ import org.slf4j.LoggerFactory;
 
 import static com.tngtech.archunit.core.importer.ClassFileProcessor.ASM_API_VERSION;
 
-class JavaFieldTypeSignatureImporter {
-    private static final Logger log = LoggerFactory.getLogger(JavaFieldTypeSignatureImporter.class);
+class JavaMethodSignatureImporter {
+    private static final Logger log = LoggerFactory.getLogger(JavaMethodSignatureImporter.class);
 
-    static Optional<JavaTypeCreationProcess<JavaField>> parseAsmFieldTypeSignature(String signature) {
+    static Optional<JavaTypeCreationProcess<JavaCodeUnit>> parseAsmMethodReturnTypeSignature(String signature) {
         if (signature == null) {
             return Optional.absent();
         }
 
-        log.trace("Analyzing field signature: {}", signature);
+        log.trace("Analyzing method signature: {}", signature);
 
         SignatureProcessor signatureProcessor = new SignatureProcessor();
         new SignatureReader(signature).accept(signatureProcessor);
-        return Optional.of(signatureProcessor.getFieldType());
+        return Optional.fromNullable(signatureProcessor.getMethodReturnType());
     }
 
     private static class SignatureProcessor extends SignatureVisitor {
-        private final GenericMemberTypeProcessor<JavaField> genericFieldTypeProcessor = new GenericMemberTypeProcessor<>();
+        private final GenericMemberTypeProcessor<JavaCodeUnit> genericMethodReturnTypeProcessor = new GenericMemberTypeProcessor<>();
 
         SignatureProcessor() {
             super(ASM_API_VERSION);
         }
 
         @Override
-        public SignatureVisitor visitSuperclass() {
-            return genericFieldTypeProcessor;
+        public SignatureVisitor visitReturnType() {
+            return genericMethodReturnTypeProcessor;
         }
 
-        JavaTypeCreationProcess<JavaField> getFieldType() {
-            return genericFieldTypeProcessor.getType();
+        JavaTypeCreationProcess<JavaCodeUnit> getMethodReturnType() {
+            return genericMethodReturnTypeProcessor.getType();
         }
     }
 }

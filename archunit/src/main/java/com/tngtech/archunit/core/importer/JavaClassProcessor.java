@@ -40,6 +40,7 @@ import com.tngtech.archunit.core.domain.ImportContext;
 import com.tngtech.archunit.core.domain.JavaAnnotation;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClassDescriptor;
+import com.tngtech.archunit.core.domain.JavaCodeUnit;
 import com.tngtech.archunit.core.domain.JavaEnumConstant;
 import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.domain.JavaModifier;
@@ -244,11 +245,13 @@ class JavaClassProcessor extends ClassVisitor {
         accessHandler.setContext(new CodeUnit(name, namesOf(parameters), className));
 
         DomainBuilders.JavaCodeUnitBuilder<?, ?> codeUnitBuilder = addCodeUnitBuilder(name);
+        Optional<JavaTypeCreationProcess<JavaCodeUnit>> genericReturnType = JavaMethodSignatureImporter.parseAsmMethodReturnTypeSignature(signature);
+        JavaClassDescriptor rawReturnType = JavaClassDescriptorImporter.importAsmMethodReturnType(desc);
         codeUnitBuilder
                 .withName(name)
                 .withModifiers(JavaModifier.getModifiersForMethod(access))
                 .withParameters(parameters)
-                .withReturnType(JavaClassDescriptorImporter.importAsmMethodReturnType(desc))
+                .withReturnType(genericReturnType, rawReturnType)
                 .withDescriptor(desc)
                 .withThrowsClause(typesFrom(exceptions));
 

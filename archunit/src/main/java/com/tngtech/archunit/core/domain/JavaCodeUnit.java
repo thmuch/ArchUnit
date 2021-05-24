@@ -47,7 +47,7 @@ import static com.tngtech.archunit.core.domain.Formatters.formatMethod;
  * be defined.
  */
 public abstract class JavaCodeUnit extends JavaMember implements HasParameterTypes, HasReturnType, HasThrowsClause<JavaCodeUnit> {
-    private final JavaClass returnType;
+    private final JavaType returnType;
     private final JavaClassList parameters;
     private final String fullName;
     private final Set<ReferencedClassObject> referencedClassObjects;
@@ -59,7 +59,7 @@ public abstract class JavaCodeUnit extends JavaMember implements HasParameterTyp
 
     JavaCodeUnit(JavaCodeUnitBuilder<?, ?> builder) {
         super(builder);
-        this.returnType = builder.getReturnType();
+        this.returnType = builder.getReturnType(this);
         this.parameters = builder.getParameters();
         fullName = formatMethod(getOwner().getName(), getName(), getRawParameterTypes());
         referencedClassObjects = ImmutableSet.copyOf(builder.getReferencedClassObjects(this));
@@ -95,8 +95,14 @@ public abstract class JavaCodeUnit extends JavaMember implements HasParameterTyp
 
     @Override
     @PublicAPI(usage = ACCESS)
-    public JavaClass getRawReturnType() {
+    public JavaType getReturnType() {
         return returnType;
+    }
+
+    @Override
+    @PublicAPI(usage = ACCESS)
+    public JavaClass getRawReturnType() {
+        return returnType.toErasure();
     }
 
     @PublicAPI(usage = ACCESS)
